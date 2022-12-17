@@ -1,0 +1,127 @@
+{
+	"name": "Dataflow Aggregate Data",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TransactiondataSQL",
+						"type": "DatasetReference"
+					},
+					"name": "sqldbnycpayrolldata"
+				},
+				{
+					"dataset": {
+						"referenceName": "src_historical",
+						"type": "DatasetReference"
+					},
+					"name": "ADLShistory"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "table_synapse_nycpayroll_summary",
+						"type": "DatasetReference"
+					},
+					"name": "SynapseSummary"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Union2data",
+					"description": "Combining rows from transformation 'sqldbnycpayrolldata' and ADLS"
+				},
+				{
+					"name": "FitlerFiscalYear"
+				},
+				{
+					"name": "NewTotalColumn",
+					"description": "Create a new column"
+				},
+				{
+					"name": "AggregatePaid"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Fiscal_Year_param as integer (0)",
+				"}",
+				"source(output(",
+				"          FiscalYear as integer,",
+				"          PayrollNumber as integer,",
+				"          AgencyID as string,",
+				"          AgencyName as string,",
+				"          EmployeeID as string,",
+				"          LastName as string,",
+				"          FirstName as string,",
+				"          AgencyStartDate as date,",
+				"          WorkLocationBorough as string,",
+				"          TitleCode as string,",
+				"          TitleDescription as string,",
+				"          LeaveStatusasofJune30 as string,",
+				"          BaseSalary as double,",
+				"          PayBasis as string,",
+				"          RegularHours as double,",
+				"          RegularGrossPaid as double,",
+				"          OTHours as double,",
+				"          TotalOTPaid as double,",
+				"          TotalOtherPay as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sqldbnycpayrolldata",
+				"source(output(",
+				"          FiscalYear as integer,",
+				"          PayrollNumber as integer,",
+				"          AgencyID as string,",
+				"          AgencyName as string,",
+				"          EmployeeID as string,",
+				"          LastName as string,",
+				"          FirstName as string,",
+				"          AgencyStartDate as date 'MM/dd/yyyy',",
+				"          WorkLocationBorough as string,",
+				"          TitleCode as string,",
+				"          TitleDescription as string,",
+				"          LeaveStatusasofJune30 as string,",
+				"          BaseSalary as double,",
+				"          PayBasis as string,",
+				"          RegularHours as double,",
+				"          RegularGrossPaid as double,",
+				"          OTHours as double,",
+				"          TotalOTPaid as double,",
+				"          TotalOtherPay as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> ADLShistory",
+				"sqldbnycpayrolldata, ADLShistory union(byName: true)~> Union2data",
+				"Union2data filter(toInteger(FiscalYear) >= $Fiscal_Year_param) ~> FitlerFiscalYear",
+				"FitlerFiscalYear derive(TotalPaid = RegularGrossPaid + TotalOTPaid + TotalOtherPay) ~> NewTotalColumn",
+				"NewTotalColumn aggregate(groupBy(AgencyName,",
+				"          FiscalYear),",
+				"     TotalPaid = sum(toFloat(TotalPaid))) ~> AggregatePaid",
+				"AggregatePaid sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FiscalYear as integer,",
+				"          AgencyName as string,",
+				"          TotalPaid as double",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> SynapseSummary"
+			]
+		}
+	}
+}

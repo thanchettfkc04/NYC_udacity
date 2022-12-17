@@ -1,0 +1,183 @@
+{
+	"name": "PL Load All Data into Synapse",
+	"properties": {
+		"activities": [
+			{
+				"name": "DF Load Agency to Synapse",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF Load Agency to Synapse",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ADLS2",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "adlsnycpayroll-hung-lastintial/dirstaging"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF Load Employee to Synapse",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF Load Employee to Synapse",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ADLS2",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "adlsnycpayroll-hung-lastintial/dirstaging"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF Load Title to Synapse",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF Load Title to Synapse",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ADLS2",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "adlsnycpayroll-hung-lastintial/dirstaging"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF Load SQL DB to Synapse1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DF Load Agency to Synapse",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "DF Load Employee to Synapse",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "DF Load Title to Synapse",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "DF Load Payroll to SQL",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF Load SQL DB to Synapse",
+						"type": "DataFlowReference"
+					},
+					"staging": {
+						"linkedService": {
+							"referenceName": "ADLS2",
+							"type": "LinkedServiceReference"
+						},
+						"folderPath": "adlsnycpayroll-hung-lastintial/dirstaging"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DF Load Payroll to SQL",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF Load Payroll to SQL",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2022-12-17T15:45:56Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

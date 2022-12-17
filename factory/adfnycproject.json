@@ -1,0 +1,9 @@
+{
+	"name": "adfnycproject",
+	"location": "southeastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "33221de1-0b92-43bd-8f69-4bebef1f4b03",
+		"tenantId": "9b7cbd77-6d6b-4879-8aba-63d7dfb18472"
+	}
+}
